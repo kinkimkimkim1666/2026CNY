@@ -4,46 +4,48 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://lucide.dev/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>新春幸運大抽獎 - 得獎名單</title>
+    <title>新春幸運大抽獎</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Noto Serif TC for elegance, Noto Sans TC for readability -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
+      :root {
+        --cny-red: #9B2C2C; /* Deep sophisticated red */
+        --cny-gold: #B45309; /* Muted gold */
+        --paper-bg: #FDFBF7; /* Warm rice paper white */
+      }
       body {
         font-family: 'Noto Sans TC', sans-serif;
-        background-color: #fcfaf5; /* Rice paper color */
-        color: #1c1917;
+        background-color: var(--paper-bg);
+        color: #292524;
       }
-      h1, h2, h3, .serif-font {
+      .font-serif {
         font-family: 'Noto Serif TC', serif;
       }
-      /* Minimalist scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #e5e7eb;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #d1d5db;
+      /* Subtle background pattern */
+      .bg-pattern {
+        background-image: radial-gradient(#E7E5E4 1px, transparent 1px);
+        background-size: 20px 20px;
       }
     </style>
-  <script type="importmap">
+    <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.292.0",
+    "xlsx": "https://esm.sh/xlsx@0.18.5",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-    "xlsx": "https://esm.sh/xlsx@^0.18.5"
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
-</head>
-  <body class="min-h-screen">
+  </head>
+  <body class="min-h-screen bg-pattern">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

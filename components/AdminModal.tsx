@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, FileSpreadsheet, Download } from 'lucide-react';
+import { X, Upload, Download, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Winner, ExcelRow } from '../types';
 
@@ -10,15 +10,13 @@ interface AdminModalProps {
 }
 
 const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUpdate }) => {
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | '', msg: string }>({ type: '', msg: '' });
 
   if (!isOpen) return null;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    setError('');
-    setSuccess('');
+    setStatus({ type: '', msg: '' });
     
     if (!file) return;
 
@@ -29,107 +27,97 @@ const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUpdate }) =>
         const wb = XLSX.read(bstr, { type: 'binary' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
+        
+        // Parse raw data
         const data = XLSX.utils.sheet_to_json<ExcelRow>(ws);
-
         const newWinners: Winner[] = [];
-        data.forEach((row, index) => {
-          const dayRaw = row.Day || row.day || row['日期'];
-          const nameRaw = row.Name || row.name || row.FacebookName || row['facebook名'] || row['姓名'];
-          const phoneRaw = row.Phone || row.phone || row.PhoneNumber || row['電話號碼'] || row['電話'];
 
-          if (dayRaw && nameRaw) {
-             const dayNum = typeof dayRaw === 'number' 
-               ? dayRaw 
-               : parseInt(dayRaw.toString().replace(/\D/g, '')) || 1;
+        data.forEach((row, index) => {
+          // Flexible column matching
+          const dayVal = row.Day || row.day || row['日期'];
+          const nameVal = row.Name || row.name || row.FacebookName || row['facebook名'] || row['姓名'];
+          const phoneVal = row.Phone || row.phone || row.PhoneNumber || row['電話號碼'] || row['電話'];
+
+          if (dayVal && nameVal) {
+             // Extract number from day if string (e.g., "Day 1" -> 1)
+             const dayNum = typeof dayVal === 'number' 
+               ? dayVal 
+               : parseInt(String(dayVal).replace(/\D/g, '')) || 1;
 
              newWinners.push({
-               id: `imported-${index}-${Date.now()}`,
+               id: `w-${Date.now()}-${index}`,
                day: dayNum,
-               name: String(nameRaw),
-               phone: String(phoneRaw || '')
+               name: String(nameVal).trim(),
+               phone: String(phoneVal || '').trim()
              });
           }
         });
 
-        if (newWinners.length === 0) {
-          setError('未能識別檔案中的資料。請確保 Excel 有 "Day", "Name", "Phone" 等欄位。');
-        } else {
+        if (newWinners.length > 0) {
           onUpdate(newWinners);
-          setSuccess(`成功匯入 ${newWinners.length} 位得獎者！`);
+          setStatus({ type: 'success', msg: `成功導入 ${newWinners.length} 筆資料` });
+        } else {
+          setStatus({ type: 'error', msg: '未找到有效資料。請檢查 Excel 欄位名稱。' });
         }
       } catch (err) {
         console.error(err);
-        setError('檔案讀取失敗，請檢查格式。');
+        setStatus({ type: 'error', msg: '讀取檔案失敗，請確認檔案格式正確。' });
       }
     };
     reader.readAsBinaryString(file);
   };
 
-  const handleDownloadTemplate = () => {
+  const downloadTemplate = () => {
     const ws = XLSX.utils.json_to_sheet([
-        { Day: 1, Name: "陳大文 (Example)", Phone: "91234567" },
-        { Day: 2, Name: "Amy Li (Example)", Phone: "61234567" },
-        { Day: 3, Name: "Peter Pan", Phone: "51234567" }
+        { '日期': 1, 'facebook名': 'Chan Tai Man', '電話號碼': '91234567' },
+        { '日期': 2, 'facebook名': 'Amy Wong', '電話號碼': '61234567' },
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Winners");
-    XLSX.writeFile(wb, "winner_template.xlsx");
+    XLSX.writeFile(wb, "lucky_draw_template.xlsx");
   };
 
   return (
-    <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white text-stone-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-stone-100">
-        <div className="border-b border-stone-100 p-4 flex justify-between items-center">
-          <h3 className="text-lg font-bold flex items-center gap-2 text-stone-800">
-            <FileSpreadsheet className="w-5 h-5 text-red-600" />
-            更新得獎名單
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-md rounded-lg shadow-xl overflow-hidden border border-stone-100">
+        <div className="bg-stone-50 p-4 border-b border-stone-100 flex justify-between items-center">
+          <h3 className="font-serif font-bold text-stone-800 flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-red-700" />
+            更新名單
           </h3>
-          <button onClick={onClose} className="hover:bg-stone-100 p-2 rounded-full transition text-stone-500">
+          <button onClick={onClose} className="text-stone-400 hover:text-stone-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
-            <h4 className="font-bold text-blue-800 mb-2 text-sm">Excel 格式說明</h4>
-            <p className="text-sm text-stone-600 mb-2">
-              請上傳 .xlsx 檔案，系統自動識別欄位：
-            </p>
-            <ul className="text-xs text-stone-500 list-disc list-inside space-y-1">
-              <li><b>Day / 日期</b> (例如: 1)</li>
-              <li><b>Name / facebook名</b></li>
-              <li><b>Phone / 電話號碼</b></li>
+          {/* Instructions */}
+          <div className="text-sm text-stone-600 bg-blue-50/50 p-4 rounded border border-blue-100">
+            <p className="font-bold mb-2 text-blue-900">Excel 欄位要求：</p>
+            <ul className="list-disc list-inside space-y-1 text-xs">
+              <li>日期 (Day)</li>
+              <li>facebook名 (Name)</li>
+              <li>電話號碼 (Phone)</li>
             </ul>
-             <button 
-                onClick={handleDownloadTemplate}
-                className="mt-3 flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 font-medium bg-white px-3 py-1.5 rounded border border-blue-200 shadow-sm"
-            >
-                <Download className="w-3 h-3" /> 下載範本
+            <button onClick={downloadTemplate} className="mt-3 text-xs flex items-center gap-1 text-blue-700 hover:underline">
+              <Download className="w-3 h-3" /> 下載範本
             </button>
           </div>
 
-          <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 flex flex-col items-center justify-center bg-stone-50 hover:bg-stone-100 transition cursor-pointer relative group">
-            <input 
-              type="file" 
-              accept=".xlsx, .xls, .csv" 
-              onChange={handleFileUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-            <div className="p-3 bg-white rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
-               <Upload className="w-6 h-6 text-red-500" />
+          {/* Upload Area */}
+          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-stone-300 border-dashed rounded-lg cursor-pointer bg-stone-50 hover:bg-stone-100 transition-colors">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Upload className="w-8 h-8 mb-2 text-stone-400" />
+              <p className="mb-2 text-sm text-stone-500">點擊上傳 Excel 檔案</p>
             </div>
-            <p className="font-medium text-stone-600">點擊上傳 Excel</p>
-          </div>
+            <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFileUpload} />
+          </label>
 
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm font-medium border border-red-100">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-100">
-              {success}
+          {/* Status Messages */}
+          {status.msg && (
+            <div className={`p-3 rounded flex items-center gap-2 text-sm ${status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              {status.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              {status.msg}
             </div>
           )}
         </div>
