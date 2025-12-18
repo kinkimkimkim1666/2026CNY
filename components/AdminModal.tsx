@@ -31,16 +31,13 @@ const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUpdate }) =>
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json<ExcelRow>(ws);
 
-        // Transform data
         const newWinners: Winner[] = [];
         data.forEach((row, index) => {
-          // Flexible key checking
           const dayRaw = row.Day || row.day || row['日期'];
           const nameRaw = row.Name || row.name || row.FacebookName || row['facebook名'] || row['姓名'];
           const phoneRaw = row.Phone || row.phone || row.PhoneNumber || row['電話號碼'] || row['電話'];
 
           if (dayRaw && nameRaw) {
-             // Extract number from day if string (e.g., "Day 1" -> 1)
              const dayNum = typeof dayRaw === 'number' 
                ? dayRaw 
                : parseInt(dayRaw.toString().replace(/\D/g, '')) || 1;
@@ -80,57 +77,58 @@ const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUpdate }) =>
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white text-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
-        <div className="bg-red-700 p-4 flex justify-between items-center text-white">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5" />
+    <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white text-stone-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-stone-100">
+        <div className="border-b border-stone-100 p-4 flex justify-between items-center">
+          <h3 className="text-lg font-bold flex items-center gap-2 text-stone-800">
+            <FileSpreadsheet className="w-5 h-5 text-red-600" />
             更新得獎名單
           </h3>
-          <button onClick={onClose} className="hover:bg-red-600 p-1 rounded transition">
-            <X className="w-6 h-6" />
+          <button onClick={onClose} className="hover:bg-stone-100 p-2 rounded-full transition text-stone-500">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <h4 className="font-bold text-yellow-800 mb-2 text-sm">Excel 格式說明</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              請上傳 .xlsx 或 .csv 檔案。系統會自動偵測以下欄位名稱：
+          <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+            <h4 className="font-bold text-blue-800 mb-2 text-sm">Excel 格式說明</h4>
+            <p className="text-sm text-stone-600 mb-2">
+              請上傳 .xlsx 檔案，系統自動識別欄位：
             </p>
-            <ul className="text-xs text-gray-500 list-disc list-inside space-y-1">
-              <li><b>Day / 日期</b> (例如: 1, 2, 3...)</li>
-              <li><b>Name / FacebookName / facebook名</b></li>
-              <li><b>Phone / PhoneNumber / 電話號碼</b></li>
+            <ul className="text-xs text-stone-500 list-disc list-inside space-y-1">
+              <li><b>Day / 日期</b> (例如: 1)</li>
+              <li><b>Name / facebook名</b></li>
+              <li><b>Phone / 電話號碼</b></li>
             </ul>
              <button 
                 onClick={handleDownloadTemplate}
-                className="mt-3 flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                className="mt-3 flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 font-medium bg-white px-3 py-1.5 rounded border border-blue-200 shadow-sm"
             >
                 <Download className="w-3 h-3" /> 下載範本
             </button>
           </div>
 
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer relative">
+          <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 flex flex-col items-center justify-center bg-stone-50 hover:bg-stone-100 transition cursor-pointer relative group">
             <input 
               type="file" 
               accept=".xlsx, .xls, .csv" 
               onChange={handleFileUpload}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <Upload className="w-10 h-10 text-gray-400 mb-3" />
-            <p className="font-medium text-gray-600">點擊上傳 Excel 檔案</p>
-            <p className="text-xs text-gray-400 mt-1">支援 .xlsx, .xls</p>
+            <div className="p-3 bg-white rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
+               <Upload className="w-6 h-6 text-red-500" />
+            </div>
+            <p className="font-medium text-stone-600">點擊上傳 Excel</p>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm font-medium">
+            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm font-medium border border-red-100">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="p-3 bg-green-100 text-green-700 rounded-lg text-sm font-medium">
+            <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-100">
               {success}
             </div>
           )}

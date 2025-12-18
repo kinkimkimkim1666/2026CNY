@@ -10,13 +10,25 @@
     <style>
       body {
         font-family: 'Noto Sans TC', sans-serif;
+        background-color: #fcfaf5; /* Rice paper color */
+        color: #1c1917;
       }
       h1, h2, h3, .serif-font {
         font-family: 'Noto Serif TC', serif;
       }
-      .bg-pattern {
-        background-color: #7f1d1d;
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23991b1b' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      /* Minimalist scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #e5e7eb;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #d1d5db;
       }
     </style>
   <script type="importmap">
@@ -31,7 +43,7 @@
 }
 </script>
 </head>
-  <body class="bg-pattern text-white min-h-screen">
+  <body class="min-h-screen">
     <div id="root"></div>
   </body>
 </html>
